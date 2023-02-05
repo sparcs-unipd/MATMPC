@@ -26,12 +26,8 @@ options = '-largeArrayDims';
 if OS_WIN
    CC_FLAGS='CXXFLAGS="$CXXFLAGS -Wall"'; % use MinGW not VS studio
 end
-if OS_LINUX 
-    if strcmp(gcc_version, 'y')
-	CC_FLAGS = 'GCC="/usr/bin/gcc-6.3"';
-    else
+if OS_LINUX
 	CC_FLAGS = 'GCC="/usr/bin/gcc"';
-    end
 end
 if OS_MAC
    CC_FLAGS = '';

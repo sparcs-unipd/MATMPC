@@ -15,20 +15,6 @@ disp( ' ' );
 disp('---------------------------------------------------------------------------------');
 
 %% Configuration (complete your configuration here...)
-addpath([pwd,'/nmpc']);
-addpath([pwd,'/model_src']);
-addpath([pwd,'/mex_core']);
-addpath(genpath([pwd,'/data']));
-if ismac
-    addpath(genpath([pwd,'/solver/mac']));
-elseif isunix
-    addpath(genpath([pwd,'/solver/linux']));
-elseif ispc
-    addpath(genpath([pwd,'/solver/win64']));
-else
-    disp('Platform not supported')
-end
-
 cd data;
 if exist('settings','file')==2
     load settings
