@@ -1,4 +1,12 @@
-clear all;clc;
+function settings = Model_Generation(model_name)
+%Model_Generation generate and compile model
+%
+% input:
+%   model_name - name of the MALTALB script that defines the model
+%   equations. The script must be in the matlab path.
+%
+
+clc;
 disp( ' ' );
 disp( 'MATMPC -- A (MAT)LAB based Model(M) Predictive(P) Control(C) Package.' );
 disp( 'Copyright (C) 2016-2019 by Yutao Chen, University of Padova' );
@@ -13,17 +21,23 @@ disp( ' ' );
 disp( ' ' );
 disp('---------------------------------------------------------------------------------');
 
-%% Insert Model here
-addpath([pwd,'/examples']);
+%% Run model script
 
-settings.model='InvertedPendulum'; % see the folder "examples" for details
+settings.model = model_name;
 
 run(settings.model);
 
-%%
-import casadi.*
+%% Get function path
+currPath = pwd;
+[filePath,~,~] = fileparts(mfilename("fullpath"));
+cd(filePath)
 
-lambda=SX.sym('lambda',nx,1);            % the i th multiplier for equality constraints
+%%
+import casadi.SX
+import casadi.Function
+import casadi.CodeGenerator
+
+lambda=casadi.SX.sym('lambda',nx,1);            % the i th multiplier for equality constraints
 mu_u=SX.sym('mu_u',nu,1);                  % the i th multiplier for bounds on controls
 mu_x=SX.sym('mu_x',nbx,1);                  % the i th multiplier for bounds on controls
 mu_g=SX.sym('mu_g',nc,1);                  % the i th multiplier for bounds on controls
@@ -155,9 +169,9 @@ adjN_fun = Function('adjN_fun',{states,params,refN, QN, mu_x,muN_g},{dobjN, adj_
 
 %% Code generation and Compile
 
-generate=input('Would you like to generate the source code?(y/n)','s');
+generateSourceCode=input('Would you like to generate the source code?(y/n)','s');
 
-if strcmp(generate,'y')
+if strcmp(generateSourceCode,'y')
 
     disp('                           ');
     disp('    Generating source code...');
@@ -210,8 +224,8 @@ disp('    Code generation completed!');
 end
 
 disp('                           ');
-compile=input('Would you like to compile the source code?(y/n)','s');
-if strcmp(compile,'y')
+compileSourceCode=input('Would you like to compile the source code?(y/n)','s');
+if strcmp(compileSourceCode,'y')
     
     disp('    Compiling...');
     
@@ -278,11 +292,16 @@ settings.nbu = nbu;
 settings.nbx_idx = nbx_idx;
 settings.nbu_idx = nbu_idx;
 
-cd data
-save('settings','settings');
-cd ..
+disp('                           ');
+saveSettings=input('Would you like to save the settings data?(y/n)','s');
+if strcmp(saveSettings,'y')
+    if ~isfolder('data')
+        mkdir   data
+    end
+    save('data/settings.mat','settings');
+end
 
-clear all;
 
 disp('NMPC solver prepared! Enjoy solving...');
 disp('                           ');
+cd(currPath)

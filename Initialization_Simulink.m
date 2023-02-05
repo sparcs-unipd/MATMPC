@@ -5,9 +5,6 @@
 %%
 clear mex; close all; clear; clc;
 
-addpath([pwd,'/nmpc']);
-addpath([pwd,'/model_src']);
-addpath([pwd,'/mex_core']);
 %% Parametri Simulazione
 cd data;
 if exist('settings','file')==2
@@ -53,6 +50,7 @@ opt.hotstart='no'; %'yes','no' (only for qpoases)
 opt.shifting='no'; % 'yes','no'
 opt.ref_type=0; % 0-time invariant, 1-time varying(no preview), 2-time varying (preview)
 opt.nonuniform_grid=0; % currently not supported 
+opt.RTI='yes';
 
 %% available qpsolver
 %'qpoases' (for full condensing)
