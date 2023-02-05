@@ -110,8 +110,13 @@ while time(end) < Tf
             input.y = repmat(data.REF(mem.iter,:)',1,N);
             input.yN = data.REF(mem.iter,1:nyN)';
         case 2 %time-varying reference (reference preview)
-            input.y = data.REF(mem.iter:mem.iter+N-1,:)';
-            input.yN = data.REF(mem.iter+N,1:nyN)';
+            if opt.nonuniform_grid
+                input.y = data.REF(mem.iter + mem.index_T(1:end-1),:)';
+                input.yN = data.REF(mem.iter + mem.index_T(end),1:nyN)';
+            else
+                input.y = data.REF(mem.iter:mem.iter+N-1,:)';
+                input.yN = data.REF(mem.iter+N,1:nyN)';
+            end
     end
               
     % obtain the state measurement
