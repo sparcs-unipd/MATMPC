@@ -1,5 +1,11 @@
 %% Initialize Data
-function [input, data] = InitData(settings)
+function [input, data] = InitData(settings, ic, cost, ref)
+
+    if nargin<3
+        externalICandRef = false;
+    else
+        externalICandRef = true;
+    end
 
     nx = settings.nx;       % No. of differential states
     nu = settings.nu;       % No. of controls
@@ -201,8 +207,77 @@ function [input, data] = InitData(settings)
             lb_g = [0; 0; 0];
             ub_g = [2; 90e3/60; 180e3/60];        
             lb_gN = [0; 0; 0];
-            ub_gN = [2; 90e3/60; 180e3/60];  
-                                                            
+            ub_gN = [2; 90e3/60; 180e3/60];
+
+        case 'highFidelityTiltingQuadrotor'
+            if( externalICandRef==true )
+                % initial conditions
+                input.x0    = ic.x0;
+                input.u0    = ic.u0;
+                input.z0    = ic.z0;
+                para0       = ic.para0;
+                % cost weight matrices
+                Q           = repmat(cost.Q(:), 1, N);
+                QN          = cost.QN(:);
+                % constraints - state
+                lb_x = cost.lb_x;
+                ub_x = cost.ub_x;
+                % constraints - input
+                lb_u = cost.lb_u;
+                ub_u = cost.ub_u;
+            else
+                input.x0 = [
+                    zeros(3,1)
+                    [1; 0; 0; 0]
+                    zeros(3,1)
+                    zeros(3,1)
+                    zeros(4,1)
+                    .33*ones(4,1) % hardcoded hovering normalized spinning rate square
+                    ];
+                input.u0 = [
+                    zeros(4,1)
+                    zeros(4,1)
+                    ];
+                input.z0 = zeros(nz,1);
+                para0 = [1; 0; 0; 0];
+
+                Qp = 5*[1 1 1];                 % position weight
+                Qeq = [1 1 1];                  % quaternion weight
+                Qv = 0.5*[1 1 1];               % linear speed weight
+                Qomega = 10*[1 1 1];            % angular speed weight
+                Qalpha = 1e-2*[1 1 1 1];        % alpha angle weight
+                Qw_bar2 = [1 1 1 1]*1e-1;       % propellers spinning rate square weight
+                Qup = [1 1 1 1]*1e-1;           % propellers spinning acceleration square weight
+                Qdotalpha = 1e-3*[1 1 1 1];     % alpha dot weight
+                Q=repmat([Qp Qeq Qv Qomega Qalpha Qw_bar2 Qup Qdotalpha]',1, N);
+                QN=[Qp Qeq Qv Qomega Qalpha Qw_bar2]';
+
+                % upper and lower bounds for states (=nbx)
+                lb_x = [
+                    -pi/3 .* ones(4,1)  % alpha min: -30 deg
+                    0.01.*ones(4,1)     % w_bar2 min: 0.01 of max
+                    ];
+                ub_x = [
+                    pi/3 .* ones(4,1)   % alpha max: 30 deg
+                    ones(4,1)           % w_bar2 max: 100% of max
+                    ];
+
+                % upper and lower bounds for controls (=nbu)
+                lb_u = [
+                    -10*ones(4,1)       % w_bar2_dot_min: -10 s^{-1}
+                    -6*ones(4,1)        % alpha_dot_min: -6 rad/s
+                    ]; % MIN SPEED AT 1%
+                ub_u = [
+                    10*ones(4,1)        % w_bar2_dot_min: 10 s^{-1}
+                    6*ones(4,1)         % alpha_dot_max: 6 rad/s
+                    ];
+            end
+            % upper and lower bounds for general constraints (=nc)
+            lb_g = [];
+            ub_g = [];
+            lb_gN = [];
+            ub_gN = [];
+
     end
 
     % prepare the data
@@ -257,23 +332,39 @@ function [input, data] = InitData(settings)
         case 'ChainofMasses_NLin'
 
             data.REF=[1,0,0,zeros(1,3*(n-1)),zeros(1,nu)];
-                                                                
+    
         case 'TethUAV'
             
         	data.REF = zeros(1, ny);
             
-        case 'DiM'	
+        case 'DiM'
 
-             load REF_DiM_2;	
+             load REF_DiM_2;
 
-             REF_DiM_2 = [REF_DiM_2, zeros(5000,24)];	
+             REF_DiM_2 = [REF_DiM_2, zeros(5000,24)];
 
              data.REF = REF_DiM_2;
              
         case 'TurboEngine'
             
             data.REF=[1.4, 0, 0];
-                     
+
+        case 'highFidelityTiltingQuadrotor'
+            if( externalICandRef==false )
+                p_ref = [1 1 1];
+                q_e_ref = [0 0 0];
+                v_ref = [0 0 0];
+                omega_ref = [0 0 0];
+                alpha_ref = [0 0 0 0];
+                w_bar2 = .33*ones(1,4); % HARDCODED FOR HOVERING
+                u_ref = [0 0 0 0];
+                dot_alpha_ref = [0 0 0 0];
+                data.REF=[p_ref q_e_ref v_ref omega_ref alpha_ref w_bar2 u_ref dot_alpha_ref];
+            else
+                data.REF = ref.h;
+                data.param = ref.param;
+            end
+
     end
     
 end

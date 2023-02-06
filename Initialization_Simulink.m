@@ -15,6 +15,10 @@ else
     error('No setting data is detected!');
 end
 
+if ( ~strcmp(settings.model,'InvertedPendulum') )
+    error("Only InvertedPendulum is supported");
+end
+
 Ts  = settings.Ts_st;    % Sampling time
 
 Ts_st = settings.Ts_st;  % Shooting interval
@@ -33,7 +37,7 @@ nbx_idx = settings.nbx_idx; % Index of state bounds
 
 %% add more to Settings
 
-N  = 80;
+N  = 30;
 N2 = 5;
 r  = 10;
 
@@ -44,8 +48,8 @@ settings.r = r;
 %% options
 opt.hessian='Gauss_Newton';  % 'Gauss_Newton', 'Generalized_Gauss_Newton'
 opt.integrator='ERK4'; % 'ERK4','IRK3, 'IRK3-DAE'
-opt.condensing='default_full';  %'default_full','no','blasfeo_full(require blasfeo installed)','partial_condensing'
-opt.qpsolver='qpoases'; 
+opt.condensing='no';  %'default_full','no','blasfeo_full(require blasfeo installed)','partial_condensing'
+opt.qpsolver='hpipm_sparse';
 opt.hotstart='no'; %'yes','no' (only for qpoases)
 opt.shifting='no'; % 'yes','no'
 opt.ref_type=0; % 0-time invariant, 1-time varying(no preview), 2-time varying (preview)

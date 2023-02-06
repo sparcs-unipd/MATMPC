@@ -1,5 +1,3 @@
-clear all; clear mex; close all;clc;
-
 disp( ' ' );
 disp( 'MATMPC -- A (MAT)LAB based Model(M) Predictive(P) Control(C) Package.' );
 disp( 'Copyright (C) 2016-2019 by Yutao Chen, University of Padova' );
@@ -38,7 +36,7 @@ nbx = settings.nbx;  % No. of state bounds
 
 %% solver configurations
 
-N  = 80;             % No. of shooting points
+N  = 30;             % No. of shooting points
 settings.N = N;
 
 N2 = N/5;
@@ -49,8 +47,8 @@ settings.r = r;      % No. of input blocks (go to InitMemory.m, line 441 to conf
 
 opt.hessian         = 'Gauss_Newton';  % 'Gauss_Newton', 'Generalized_Gauss_Newton'
 opt.integrator      = 'ERK4'; % 'ERK4','IRK3','IRK3-DAE'
-opt.condensing      = 'default_full';  %'default_full','no','blasfeo_full(require blasfeo installed)','partial_condensing'
-opt.qpsolver        = 'qpoases'; 
+opt.condensing      = 'no';  %'default_full','no','blasfeo_full(require blasfeo installed)','partial_condensing'
+opt.qpsolver        = 'hpipm_sparse';
 opt.hotstart        = 'no'; %'yes','no' (only for qpoases, use 'no' for nonlinear systems)
 opt.shifting        = 'no'; % 'yes','no'
 opt.ref_type        = 0; % 0-time invariant, 1-time varying(no preview), 2-time varying (preview)
@@ -77,7 +75,11 @@ if opt.nonuniform_grid
     N = r;
     settings.N = N;
 else
-	[input, data] = InitData(settings);
+    if( exist('ic','var')&&exist('cost','var')&&exist('ref','var'))
+	    [input, data] = InitData(settings,ic,cost,ref);
+    else
+        [input, data] = InitData(settings);
+    end
 end  
 
 %% Initialize Solvers (only for advanced users)
@@ -87,7 +89,7 @@ mem = InitMemory(settings, opt, input);
 %% Simulation (start your simulation...)
 
 mem.iter = 1; time = 0.0;
-Tf = 4;  % simulation time
+Tf = 10;  % simulation time
 state_sim= input.x0';
 controls_MPC = input.u0';
 y_sim = [];

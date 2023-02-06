@@ -362,4 +362,69 @@ switch settings.model
         
         xlabel('Time[s]');
 
+    case 'highFidelityTiltingQuadrotor'
+        
+        if( exist('fig_trj','var') && isgraphics(fig_trj,'figure'))
+            delete(fig_trj);
+        end
+        fig_trj = figure('Name','Trajectories');        
+        t = tiledlayout(4,3);
+        
+        nexttile(1,[2 1]);  % position
+        plot(time,state_sim(:,1:3));
+        hold on
+        if opt.ref_type == 2
+            plot(time,data.REF(1:length(time),1:3),'--');
+        elseif opt.ref_type == 0
+            plot(time, [data.REF(1).*ones(length(time),1), data.REF(2).*ones(length(time),1), data.REF(3).*ones(length(time),1)], '--')
+        end
+        grid on
+        ylabel('$p$ [m]');
+        legend('$p_x$','$p_y$','$p_z$')
+        
+        nexttile(7,[2 1]); % quaternion
+        plot(time, rad2deg(quat2eul(state_sim(:,4:7))));
+        %ylim([-1.1 1.1]);
+        grid on
+        ylabel('$eul$ [deg]');
+        legend("yaw","pitch","roll");
+        
+        nexttile(2,[2 1]);  % linear vel
+        plot(time,state_sim(:,8:10));
+        grid on
+        ylabel('$v$ [m/s]');
+        legend('$v_x$','$v_y$','$v_z$')
+        
+        nexttile(8,[2 1]);  % angular vel
+        plot(time,state_sim(:,11:13));
+        grid on
+        ylabel('$\omega$ [rad/s]');
+        legend('$\omega_x$','$\omega_y$','$\omega_z$')
+        
+        nexttile(3,[1 1]);  % alpha
+        plot(time, rad2deg(state_sim(:,14:17)));
+        grid on
+        ylabel('$\alpha$ [rad]');
+        legend('$\alpha_1$','$\alpha_2$','$\alpha_3$','$\alpha_4$')
+        
+        nexttile(6,[1 1]);  % alpha dot
+        plot(time, rad2deg(controls_MPC(:,5:8)));
+        grid on
+        ylabel('$\dot{\alpha}$ [deg/s]');
+        legend('$\dot{\alpha}_1$','$\dot{\alpha}_2$','$\dot{\alpha}_3$','$\dot{\alpha}_4$')
+        
+        nexttile(9,[1 1]);  % alpha u
+        plot(time,controls_MPC(:,1:4));
+        grid on
+        ylabel('$\dot{\bar{w}}$');
+        legend('$\dot{\bar{w}}_1$','$\dot{\bar{w}}_2$','$\dot{\bar{w}}_3$','$\dot{\bar{w}}_4$')
+
+        nexttile(12,[1 1]);  % alpha u
+        plot(time,state_sim(:,18:21));
+        grid on
+        ylabel('$\bar{w}$');
+        legend('$\bar{w}_1$','$\bar{w}_2$','$\bar{w}_3$','$\bar{w}_4$')
+        
+        xlabel(t,'$t$ [s]','interpreter','latex');
+
 end
