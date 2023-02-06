@@ -1,4 +1,4 @@
-function settings = Model_Generation(model_name)
+function settings = Model_Generation(model_name, modelGenParams)
 %Model_Generation generate and compile model
 %
 % input:
@@ -25,6 +25,9 @@ disp('--------------------------------------------------------------------------
 
 settings.model = model_name;
 
+if( exist(modelGenParams,"file")==2)
+    run(modelGenParams);
+end
 run(settings.model);
 
 %% Get function path
