@@ -25,7 +25,7 @@ disp('--------------------------------------------------------------------------
 
 settings.model = model_name;
 
-if( exist(modelGenParams,"file")==2)
+if( nargin==2 && exist(modelGenParams,"file")==2 )
     run(modelGenParams);
 end
 run(settings.model);
