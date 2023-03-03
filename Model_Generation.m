@@ -4,6 +4,7 @@ function settings = Model_Generation(model_name, modelGenParams)
 % input:
 %   model_name - name of the MALTALB script that defines the model
 %   equations. The script must be in the matlab path.
+%   modelGenParams - optional script to be run before 'model_name.m'
 %
 
 clc;
